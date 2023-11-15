@@ -20,8 +20,8 @@
                             (throw (IllegalArgumentException. "too many arguments after &"))
                             `(? ~args ~pat ~body)))
                     (throw (IllegalArgumentException. "missing argument after &"))))
-            (let* [a (gensym)
-                   as (gensym)]
+            (let* [a (gensym "arg")
+                   as (gensym "args")]
                   `(let* [~a (first ~args)
                           ~as (next ~args)]
                          (? ~a ~pat (?seq ~as ~(next pats) ~body))))))
@@ -33,8 +33,8 @@
       body
       `(let* [~pat ~arg] ~body))
     (if (seqable? pat)
-      (let* [a (gensym)
-             as (gensym)]
+      (let* [a (gensym "arg")
+             as (gensym "args")]
             `(let* [~a ~arg]
                    (if (= (type ~a) ~(type pat))
                      (let* [~as (seq ~a)]
@@ -43,8 +43,8 @@
          ~body))))
 
 (defn main []
-  (let [e '(? [1 2 3]
-              [_ & xs] xs)]
+  (let [e '(? [1 2 3 4]
+              [1 _ & xs] xs)]
     (pprint e)
     (pprint (eval e))
     (pprint (macroexpand-all e))))
