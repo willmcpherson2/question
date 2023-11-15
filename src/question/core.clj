@@ -11,10 +11,16 @@
 
 (defmacro ?seq [args pats body]
   (if-let [[pat & pats] pats]
-    (let [a (gensym)
-          as (gensym)]
-      `(if-let [[~a & ~as] ~args]
-         (? ~a ~pat (?seq ~as ~pats ~body))))
+    (if (= pat '&)
+      (if-let [[pat & pats] pats]
+        (if (= pats nil)
+          `(? ~args ~pat ~body)
+          (throw (IllegalArgumentException. "too many arguments after &")))
+        (throw (IllegalArgumentException. "missing argument after &")))
+      (let [a (gensym)
+            as (gensym)]
+        `(if-let [[~a & ~as] ~args]
+           (? ~a ~pat (?seq ~as ~pats ~body)))))
     body))
 
 (defmacro ? [arg pat body]
@@ -28,7 +34,7 @@
 
 (defn main []
   (let [e '(? [1 2 3]
-              [1 2 x] x)]
+              [_ & xs] xs)]
     (pprint e)
     (pprint (eval e))
     (pprint (macroexpand-all e))))
