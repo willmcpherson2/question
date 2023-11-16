@@ -37,7 +37,22 @@
          ~body
          ~else))))
 
-(defmacro ? [arg & clauses]
+(defmacro ?
+  "Takes an argument and a set of pattern/body pairs.
+
+  A pattern can be any of the following:
+
+  - The symbol _, which just returns the body.
+  - A symbol, which is bound to the argument in the body.
+  - A seqable, where each element will be pattern matched with the
+  corresponding elements in the argument.
+  - The symbol & within a seqable, which must be followed by a single
+  pattern which will be pattern matched with the rest of the sequence.
+
+  Any other pattern will be tested for equality with the argument. If
+  false, the next pattern is tested. If no patterns match, nil is
+  returned."
+  [arg & clauses]
   (let* [clauses (seq clauses)]
         (if clauses
           (let* [pat (first clauses)
