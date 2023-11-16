@@ -1,11 +1,4 @@
-(ns question.core
-  (:require
-   [clojure.pprint :refer [pprint]]
-   [clojure.walk :refer [macroexpand-all]]))
-
-(defn dbg [x]
-  (println x)
-  x)
+(ns question.core)
 
 (declare ?branch)
 
@@ -55,11 +48,3 @@
                         `(?branch ~arg ~pat ~body (? ~arg ~@clauses)))
                   (throw (IllegalArgumentException. "expected body after pattern"))))
           nil)))
-
-(defn main []
-  (let [e '(? [:add 1 2]
-              [:mul x y] (* x y)
-              [:add x y] (+ x y))]
-    (pprint e)
-    (pprint (eval e))
-    (pprint (macroexpand-all e))))
