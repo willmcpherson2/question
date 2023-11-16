@@ -2,7 +2,11 @@
 
 (declare ?branch)
 
-(defmacro ?seq [args pats body else]
+(defmacro ?seq
+  "Single branch of ?, taking sequences for the argument and
+  pattern. Only the elements will be pattern matched, so the sequence
+  types don't matter."
+  [args pats body else]
   (if pats
     (let* [pat (first pats)]
           (if (= pat '&)
@@ -20,7 +24,9 @@
                          (?branch ~a ~pat (?seq ~as ~(next pats) ~body ~else) ~else)))))
     body))
 
-(defmacro ?branch [arg pat body else]
+(defmacro ?branch
+  "Single branch of ?."
+  [arg pat body else]
   (if (symbol? pat)
     (if (= pat '_)
       body
