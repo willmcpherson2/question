@@ -7,9 +7,9 @@
   (println x)
   x)
 
-(declare ?)
+(declare ?branch)
 
-(defmacro ?seq [args pats body]
+(defmacro ?seq [args pats body else]
   (if pats
     (let* [pat (first pats)]
           (if (= pat '&)
@@ -18,16 +18,16 @@
                     (let* [pat (first pats)]
                           (if (next pats)
                             (throw (IllegalArgumentException. "too many arguments after &"))
-                            `(? ~args ~pat ~body)))
+                            `(?branch ~args ~pat ~body ~else)))
                     (throw (IllegalArgumentException. "missing argument after &"))))
             (let* [a (gensym "arg")
                    as (gensym "args")]
                   `(let* [~a (first ~args)
                           ~as (next ~args)]
-                         (? ~a ~pat (?seq ~as ~(next pats) ~body))))))
+                         (?branch ~a ~pat (?seq ~as ~(next pats) ~body ~else) ~else)))))
     body))
 
-(defmacro ? [arg pat body]
+(defmacro ?branch [arg pat body else]
   (if (symbol? pat)
     (if (= pat '_)
       body
@@ -38,13 +38,28 @@
             `(let* [~a ~arg]
                    (if (= (type ~a) ~(type pat))
                      (let* [~as (seq ~a)]
-                           (?seq ~as ~pat ~body)))))
+                           (?seq ~as ~pat ~body ~else))
+                     ~else)))
       `(if (= ~arg ~pat)
-         ~body))))
+         ~body
+         ~else))))
+
+(defmacro ? [arg & clauses]
+  (let* [clauses (seq clauses)]
+        (if clauses
+          (let* [pat (first clauses)
+                 clauses (next clauses)]
+                (if clauses
+                  (let* [body (first clauses)
+                         clauses (next clauses)]
+                        `(?branch ~arg ~pat ~body (? ~arg ~@clauses)))
+                  (throw (IllegalArgumentException. "expected body after pattern"))))
+          nil)))
 
 (defn main []
-  (let [e '(? [1 2 3 4]
-              [1 _ & xs] xs)]
+  (let [e '(? [:add 1 2]
+              [:mul x y] (* x y)
+              [:add x y] (+ x y))]
     (pprint e)
     (pprint (eval e))
     (pprint (macroexpand-all e))))
