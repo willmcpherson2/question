@@ -69,9 +69,9 @@ nil
 :123
 
 ;; Use rest syntax to match end of sequence
-(? [1 2 3]
-   [1 2 3 & nil] :exactly-123)
-:exactly-123
+(? [1 2 3 4]
+   [1 2 3 & nil] :123)
+nil
 
 ;; Splitting a sequence
 (? [1 2 3]
