@@ -1,5 +1,13 @@
 (ns question.core)
 
+(def _
+  "The symbol _, which is a wildcard in patterns."
+  '_)
+
+(def &
+  "The symbol &, which is a rest argument in patterns."
+  '&)
+
 (declare ?branch)
 
 (defmacro ?seq
@@ -30,7 +38,7 @@
   (if (symbol? pat)
     (if (= pat '_)
       body
-      `(let* [~pat ~arg] ~body))
+      `(let* [~(symbol (name pat)) ~arg] ~body))
     (if (seqable? pat)
       (let* [a (gensym "arg")
              as (gensym "args")]
@@ -67,6 +75,6 @@
                 (if clauses
                   (let* [body (first clauses)
                          clauses (next clauses)]
-                        `(?branch ~arg ~pat ~body (? ~arg ~@clauses)))
+                        `(?branch ~arg ~(eval pat) ~body (? ~arg ~@clauses)))
                   (throw (IllegalArgumentException. "expected body after pattern"))))
           nil)))

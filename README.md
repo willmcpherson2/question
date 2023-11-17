@@ -28,6 +28,9 @@ Macro
 ## Examples
 
 ```clojure
+(ns examples.core
+  (:require [question.core :refer [? _ &]]))
+
 ;; No patterns, so always nil
 (? 1)
 nil
@@ -73,16 +76,46 @@ nil
    [1 2 3 & nil] :123)
 nil
 
+;; Ignoring the elements and checking the sequence type
+(? [1 2 3]
+   [& _] :vector)
+:vector
+
+;; Symbols are bound in the body
+(? [1 2 3]
+   ['x 'y 3] (+ x y))
+3
+
+;; Quoting the whole pattern can be easier
+(? [1 2 3]
+   '[x y 3] (+ x y))
+3
+
+;; Syntax-quote works too
+(? [1 2 3]
+   `[x y 3] (+ x y))
+3
+
 ;; Splitting a sequence
 (? [1 2 3]
-   [x & xs] {:first x, :rest xs})
-{:first 1, :rest (2 3)}
+   '[x & xs] {:first x, :rest xs})
+{:first 1, :rest '(2 3)}
 
-;; Checking the sequence type only
+;; Patterns are evaluated at compile-time
+(? [1 2 3]
+   [1 2 (+ 1 2)] :ok)
+:ok
+
+;; def variables are available at compile-time
+(def three 3)
+(? [1 2 3]
+   [1 2 three] :ok)
+:ok
+
+;; You can even apply functions to patterns
 (? '(1 2 3)
-   [& _] :vector
-   (& _) :list)
-:list
+   (reverse '(x 2 1)) x)
+3
 
 ;; If a pattern fails, its body will not be evaluated
 (? 2
