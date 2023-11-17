@@ -66,7 +66,11 @@
 
   Any other pattern will be tested for equality with the argument. If
   false, the next pattern is tested. If no patterns match, nil is
-  returned."
+  returned.
+
+  Patterns are evaluated at compile-time.
+
+  Examples: https://github.com/willmcpherson2/question/blob/main/README.md#examples"
   [arg & clauses]
   (let* [clauses (seq clauses)]
         (if clauses
