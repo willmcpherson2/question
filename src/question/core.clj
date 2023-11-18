@@ -88,12 +88,26 @@
 
   Examples: https://github.com/willmcpherson2/question/blob/main/README.md#examples"
   [arg & clauses]
-  (if (seq clauses)
-    (let* [pat (first clauses)
-           clauses (rest clauses)]
-          (if (seq clauses)
-            (let* [body (first clauses)
-                   clauses (rest clauses)]
-                  `(?branch ~arg ~(eval pat) ~body (? ~arg ~@clauses)))
-            (throw (IllegalArgumentException. "expected body after pattern"))))
-    nil))
+  (let [num-clauses (count clauses)]
+    (if (even? num-clauses)
+      (if (> num-clauses 0)
+        (let [arg-sym (gensym "arg")
+              names (repeatedly (/ num-clauses 2) (partial gensym "branch"))
+              elses (concat (rest names) [nil])
+              branches (->> clauses
+                            (partition 2)
+                            (map vector names)
+                            (map vector elses)
+                            (map (fn [[else [name [pat body]]]]
+                                   [name `(fn []
+                                            (?branch ~arg-sym
+                                                     ~(eval pat)
+                                                     ~body
+                                                     ~(if else `(~else) nil)))]))
+                            reverse
+                            (apply concat)
+                            vec)
+              entry (first names)]
+          `(let [~arg-sym ~arg ~@branches] (~entry)))
+        nil)
+      (throw (IllegalArgumentException. "? requires even number of forms")))))

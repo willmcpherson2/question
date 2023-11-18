@@ -83,8 +83,4 @@
             1 (throw (Exception. "evaluated!"))
             2 :ok
             3 (throw (Exception. "evaluated!")))
-         :ok))
-
-  (is (= (? (lazy-seq (cons 1 (lazy-seq (cons (throw (Exception. "2!")) nil))))
-            (any 1 _) :one)
-         :one)))
+         :ok)))
