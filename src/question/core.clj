@@ -27,20 +27,20 @@
   types don't matter."
   [args pats body else]
   (if (seq pats)
-    (let* [pat (first pats)]
-          (if (= pat '&)
-            (let* [pats (rest pats)]
-                  (if (seq pats)
-                    (let* [pat (first pats)]
-                          (if (seq (rest pats))
-                            (throw (IllegalArgumentException. "too many arguments after &"))
-                            `(?branch ~args ~pat ~body ~else)))
-                    (throw (IllegalArgumentException. "missing argument after &"))))
-            (let* [a (gensym "arg")
-                   as (gensym "args")]
-                  `(let* [~a (first ~args)
-                          ~as (rest ~args)]
-                         (?branch ~a ~pat (?seq ~as ~(rest pats) ~body ~else) ~else)))))
+    (let [pat (first pats)]
+      (if (= pat '&)
+        (let [pats (rest pats)]
+          (if (seq pats)
+            (let [pat (first pats)]
+              (if (seq (rest pats))
+                (throw (IllegalArgumentException. "too many arguments after &"))
+                `(?branch ~args ~pat ~body ~else)))
+            (throw (IllegalArgumentException. "missing argument after &"))))
+        (let [a (gensym "arg")
+              as (gensym "args")]
+          `(let [~a (first ~args)
+                 ~as (rest ~args)]
+             (?branch ~a ~pat (?seq ~as ~(rest pats) ~body ~else) ~else)))))
     `(if (seq ~args)
        ~else
        ~body)))
@@ -51,18 +51,18 @@
   (if (symbol? pat)
     (if (= pat '_)
       body
-      `(let* [~(symbol (name pat)) ~arg] ~body))
+      `(let [~(symbol (name pat)) ~arg] ~body))
     (if (seqable? pat)
-      (let* [a (gensym "arg")
-             as (gensym "args")]
-            `(let* [~a ~arg]
-                   ~(if (= (type pat) Any)
-                      `(let* [~as (seq ~a)]
-                             (?seq ~as ~pat ~body ~else))
-                      `(if (= (type ~a) ~(type pat))
-                         (let* [~as (seq ~a)]
-                               (?seq ~as ~pat ~body ~else))
-                         ~else))))
+      (let [a (gensym "arg")
+            as (gensym "args")]
+        `(let [~a ~arg]
+           ~(if (= (type pat) Any)
+              `(let [~as (seq ~a)]
+                 (?seq ~as ~pat ~body ~else))
+              `(if (= (type ~a) ~(type pat))
+                 (let [~as (seq ~a)]
+                   (?seq ~as ~pat ~body ~else))
+                 ~else))))
       `(if (= ~arg ~pat)
          ~body
          ~else))))
