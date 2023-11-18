@@ -26,24 +26,24 @@
   pattern. Only the elements will be pattern matched, so the sequence
   types don't matter."
   [args pats body else]
-  (if pats
+  (if (seq pats)
     (let* [pat (first pats)]
           (if (= pat '&)
-            (let* [pats (next pats)]
-                  (if pats
+            (let* [pats (rest pats)]
+                  (if (seq pats)
                     (let* [pat (first pats)]
-                          (if (next pats)
+                          (if (seq (rest pats))
                             (throw (IllegalArgumentException. "too many arguments after &"))
                             `(?branch ~args ~pat ~body ~else)))
                     (throw (IllegalArgumentException. "missing argument after &"))))
             (let* [a (gensym "arg")
                    as (gensym "args")]
                   `(let* [~a (first ~args)
-                          ~as (next ~args)]
-                         (?branch ~a ~pat (?seq ~as ~(next pats) ~body ~else) ~else)))))
-    `(if (nil? ~args)
-       ~body
-       ~else)))
+                          ~as (rest ~args)]
+                         (?branch ~a ~pat (?seq ~as ~(rest pats) ~body ~else) ~else)))))
+    `(if (seq ~args)
+       ~else
+       ~body)))
 
 (defmacro ?branch
   "Single branch of ?."
@@ -58,10 +58,10 @@
             `(let* [~a ~arg]
                    ~(if (= (type pat) Any)
                       `(let* [~as (seq ~a)]
-                             (?seq ~as ~(seq pat) ~body ~else))
+                             (?seq ~as ~pat ~body ~else))
                       `(if (= (type ~a) ~(type pat))
                          (let* [~as (seq ~a)]
-                               (?seq ~as ~(seq pat) ~body ~else))
+                               (?seq ~as ~pat ~body ~else))
                          ~else))))
       `(if (= ~arg ~pat)
          ~body
@@ -88,13 +88,12 @@
 
   Examples: https://github.com/willmcpherson2/question/blob/main/README.md#examples"
   [arg & clauses]
-  (let* [clauses (seq clauses)]
-        (if clauses
-          (let* [pat (first clauses)
-                 clauses (next clauses)]
-                (if clauses
-                  (let* [body (first clauses)
-                         clauses (next clauses)]
-                        `(?branch ~arg ~(eval pat) ~body (? ~arg ~@clauses)))
-                  (throw (IllegalArgumentException. "expected body after pattern"))))
-          nil)))
+  (if (seq clauses)
+    (let* [pat (first clauses)
+           clauses (rest clauses)]
+          (if (seq clauses)
+            (let* [body (first clauses)
+                   clauses (rest clauses)]
+                  `(?branch ~arg ~(eval pat) ~body (? ~arg ~@clauses)))
+            (throw (IllegalArgumentException. "expected body after pattern"))))
+    nil))
