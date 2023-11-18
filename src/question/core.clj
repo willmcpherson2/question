@@ -41,7 +41,9 @@
                   `(let* [~a (first ~args)
                           ~as (next ~args)]
                          (?branch ~a ~pat (?seq ~as ~(next pats) ~body ~else) ~else)))))
-    body))
+    `(if (nil? ~args)
+       ~body
+       ~else)))
 
 (defmacro ?branch
   "Single branch of ?."
@@ -56,10 +58,10 @@
             `(let* [~a ~arg]
                    ~(if (= (type pat) Any)
                       `(let* [~as (seq ~a)]
-                             (?seq ~as ~pat ~body ~else))
+                             (?seq ~as ~(seq pat) ~body ~else))
                       `(if (= (type ~a) ~(type pat))
                          (let* [~as (seq ~a)]
-                               (?seq ~as ~pat ~body ~else))
+                               (?seq ~as ~(seq pat) ~body ~else))
                          ~else))))
       `(if (= ~arg ~pat)
          ~body

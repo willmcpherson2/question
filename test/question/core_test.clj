@@ -25,35 +25,18 @@
             2 :two)
          :two))
 
-  ;; Sequence types must match
-  (is (= (? []
-            () :yes)
-         nil))
-
-  ;; Each element must match
-  (is (= (? [1 2 :nope]
-            [1 2 3] :123)
-         nil))
-
-  ;; Every element must be present
   (is (= (? [1 2]
-            [1 2 3] :123)
-         nil))
+            (list 1 2) :list-1-2 ;; Sequence types must match
+            [1] :vec-1           ;; Every element must be present
+            [1 3] :vec-1-3       ;; Every element must be equal
+            [1 2 3] :vec-1-2-3   ;; No excess elements
+            [1 2] :vec-1-2)
+         :vec-1-2))
 
-  ;; Excess elements are allowed
-  (is (= (? [1 2 3 4]
-            [1 2 3] :123)
-         :123))
-
-  ;; Use rest syntax to match end of sequence
-  (is (= (? [1 2 3 4]
-            [1 2 3 & nil] :123)
-         nil))
-
-  ;; Ignoring the elements and checking the sequence type
+  ;; Use rest syntax if length doesn't matter
   (is (= (? [1 2 3]
-            [& _] :vector)
-         :vector))
+            [1 & _] :starts-1)
+         :starts-1))
 
   ;; The Any type matches any seqable
   (is (= (? [1 2 3]
