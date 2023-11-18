@@ -1,6 +1,6 @@
 (ns question.core-test
   (:require [clojure.test :refer [deftest is]]
-            [question.core :refer [? _ &]]))
+            [question.core :refer [? _ & any]]))
 
 (def three 3)
 
@@ -54,6 +54,11 @@
   (is (= (? [1 2 3]
             [& _] :vector)
          :vector))
+
+  ;; The Any type matches any seqable
+  (is (= (? [1 2 3]
+            (any 1 2 3) :seqable)
+         :seqable))
 
   ;; Symbols are bound in the body
   (is (= (? [1 2 3]

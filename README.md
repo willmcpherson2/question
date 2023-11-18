@@ -16,7 +16,7 @@ Macro
   - A symbol, which is bound to the argument in the body.
   - A seqable, where each element will be pattern matched with the
   corresponding elements in the argument. The seqable types must
-  match.
+  match, unless the pattern has type `Any`.
   - The symbol & within a seqable, which must be followed by a single
   pattern which will be pattern matched with the rest of the sequence.
 
@@ -33,7 +33,7 @@ Macro
 
 ```clojure
 (ns examples.core
-  (:require [question.core :refer [? _ &]]))
+  (:require [question.core :refer [? _ & any]]))
 
 ;; No patterns, so always nil
 (? 1)
@@ -84,6 +84,11 @@ nil
 (? [1 2 3]
    [& _] :vector)
 :vector
+
+;; The Any type matches any seqable
+(? [1 2 3]
+   (any 1 2 3) :seqable)
+:seqable
 
 ;; Symbols are bound in the body
 (? [1 2 3]
