@@ -16,7 +16,7 @@ Macro
   - A symbol, which is bound to the argument in the body.
   - A seqable, where each element will be pattern matched with the
   corresponding elements in the argument. The seqable types must
-  match, unless the pattern has type `Any`.
+  match, unless the pattern has type Any.
   - The symbol & within a seqable, which must be followed by a single
   pattern which will be pattern matched with the rest of the sequence.
 
