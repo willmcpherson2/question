@@ -22,10 +22,10 @@
 (declare ?branch)
 
 (defn- ?seq
-  "Single branch of ?, taking sequences for the argument and
-  pattern. Only the elements will be pattern matched, so the sequence
-  types don't matter."
-  [args pats body else]
+  "Pattern match a sequence. arg-sym is the symbol of the argument and
+  args-sym is (seq arg).
+  They are reused via (let [arg (first args) args (rest args)] ...)"
+  [arg-sym args-sym pats body else]
   (if (seq pats)
     (let [pat (first pats)]
       (if (= pat '&)
@@ -34,36 +34,39 @@
             (let [pat (first pats)]
               (if (seq (rest pats))
                 (throw (IllegalArgumentException. "too many arguments after &"))
-                (?branch args pat body else)))
+                (?branch args-sym pat body else)))
             (throw (IllegalArgumentException. "missing argument after &"))))
-        (let [arg-sym (gensym "arg")
-              args-sym (gensym "args")]
-          `(let [~arg-sym (first ~args)
-                 ~args-sym (rest ~args)]
-             ~(?branch arg-sym pat (?seq args-sym (rest pats) body else) else)))))
-    `(if (seq ~args)
+        `(let [~arg-sym (first ~args-sym)
+               ~args-sym (rest ~args-sym)]
+           ~(?branch arg-sym
+                     pat
+                     (?seq arg-sym
+                           args-sym
+                           (rest pats)
+                           body else)
+                     else))))
+    `(if (seq ~args-sym)
        ~else
        ~body)))
 
 (defn- ?branch
-  "Single branch of ?."
-  [arg pat body else]
+  "Single branch of ?. arg-sym is the symbol of the argument being
+  pattern matched."
+  [arg-sym pat body else]
   (if (symbol? pat)
     (if (= pat '_)
       body
-      `(let [~(symbol (name pat)) ~arg] ~body))
+      `(let [~(symbol (name pat)) ~arg-sym] ~body))
     (if (seqable? pat)
-      (let [arg-sym (gensym "arg")
-            args-sym (gensym "args")]
-        `(let [~arg-sym ~arg]
-           ~(if (= (type pat) Any)
-              `(let [~args-sym (seq ~arg-sym)]
-                 ~(?seq args-sym pat body else))
-              `(if (= (type ~arg-sym) ~(type pat))
-                 (let [~args-sym (seq ~arg-sym)]
-                   ~(?seq args-sym pat body else))
-                 ~else))))
-      `(if (= ~arg ~pat)
+      (let [args-sym (gensym "args")]
+        (if (= (type pat) Any)
+          `(let [~args-sym (seq ~arg-sym)]
+             ~(?seq arg-sym args-sym pat body else))
+          `(if (= (type ~arg-sym) ~(type pat))
+             (let [~args-sym (seq ~arg-sym)]
+               ~(?seq arg-sym args-sym pat body else))
+             ~else)))
+      `(if (= ~arg-sym ~pat)
          ~body
          ~else))))
 
