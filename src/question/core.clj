@@ -12,11 +12,11 @@
   (Any. (apply list items)))
 
 (def _
-  "The symbol _, which is a wildcard in patterns."
+  "Alias for symbol _, which is a wildcard in patterns."
   '_)
 
 (def &
-  "The symbol &, which is a rest argument in patterns."
+  "Alias for symbol &, which is a rest argument in patterns."
   '&)
 
 (declare ?branch)
