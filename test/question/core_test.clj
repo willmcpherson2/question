@@ -83,4 +83,17 @@
             1 (throw (Exception. "evaluated!"))
             2 :ok
             3 (throw (Exception. "evaluated!")))
-         :ok)))
+         :ok))
+
+  (is (= (? (lazy-seq (cons 1 (lazy-seq (cons (throw (Exception. "2!")) nil))))
+            (any 1 & _) :one)
+         :one))
+
+  (is (= (? []
+            1 :one
+            (any) :seqable)
+         :seqable))
+
+  (is (= (? [1 '(2 3 4) 5]
+            (vector 'x (list 2 'y 4) 'z) (+ x y z))
+         9)))
