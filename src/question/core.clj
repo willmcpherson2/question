@@ -99,14 +99,14 @@
               elses (concat (rest names) [nil])
               branches (->> clauses
                             (partition 2)
-                            (map vector names)
                             (map vector elses)
-                            (map (fn [[else [name [pat body]]]]
-                                   [name `(fn []
-                                            ~(?branch arg-sym
-                                                      (eval pat)
-                                                      body
-                                                      (if else `(~else) nil)))]))
+                            (map (fn [[else [pat body]]]
+                                   `(fn []
+                                      ~(?branch arg-sym
+                                                (eval pat)
+                                                body
+                                                (if else `(~else) nil)))))
+                            (map vector names)
                             reverse
                             (apply concat)
                             vec)
