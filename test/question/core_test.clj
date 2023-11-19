@@ -101,4 +101,9 @@
   (is (= (? :a
             (any :a) :seqable-a
             :a :just-a)
-         :just-a)))
+         :just-a))
+
+  (is (= (? []
+            ['x] [:one x]
+            [] :empty)
+         :empty)))

@@ -36,15 +36,17 @@
                 (throw (IllegalArgumentException. "too many arguments after &"))
                 (?branch args-sym pat body else)))
             (throw (IllegalArgumentException. "missing argument after &"))))
-        `(let [~arg-sym (first ~args-sym)
-               ~args-sym (rest ~args-sym)]
-           ~(?branch arg-sym
-                     pat
-                     (?seq arg-sym
-                           args-sym
-                           (rest pats)
-                           body else)
-                     else))))
+        `(if ~args-sym
+           (let [~arg-sym (first ~args-sym)
+                 ~args-sym (rest ~args-sym)]
+             ~(?branch arg-sym
+                       pat
+                       (?seq arg-sym
+                             args-sym
+                             (rest pats)
+                             body else)
+                       else))
+           ~else)))
     `(if (seq ~args-sym)
        ~else
        ~body)))
