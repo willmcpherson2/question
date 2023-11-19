@@ -96,4 +96,9 @@
 
   (is (= (? [1 '(2 3 4) 5]
             (vector 'x (list 2 'y 4) 'z) (+ x y z))
-         9)))
+         9))
+
+  (is (= (? :a
+            (any :a) :seqable-a
+            :a :just-a)
+         :just-a)))

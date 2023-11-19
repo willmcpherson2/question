@@ -59,13 +59,12 @@
       `(let [~(symbol (name pat)) ~arg-sym] ~body))
     (if (seqable? pat)
       (let [args-sym (gensym "args")]
-        (if (= (type pat) Any)
-          `(let [~args-sym (seq ~arg-sym)]
+        `(if ~(if (= (type pat) Any)
+                `(seqable? ~arg-sym)
+                `(= (type ~arg-sym) ~(type pat)))
+           (let [~args-sym (seq ~arg-sym)]
              ~(?seq arg-sym args-sym pat body else))
-          `(if (= (type ~arg-sym) ~(type pat))
-             (let [~args-sym (seq ~arg-sym)]
-               ~(?seq arg-sym args-sym pat body else))
-             ~else)))
+           ~else))
       `(if (= ~arg-sym ~pat)
          ~body
          ~else))))
