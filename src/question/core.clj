@@ -36,11 +36,11 @@
                 (throw (IllegalArgumentException. "too many arguments after &"))
                 (?branch args pat body else)))
             (throw (IllegalArgumentException. "missing argument after &"))))
-        (let [a (gensym "arg")
-              as (gensym "args")]
-          `(let [~a (first ~args)
-                 ~as (rest ~args)]
-             ~(?branch a pat (?seq as (rest pats) body else) else)))))
+        (let [arg-sym (gensym "arg")
+              args-sym (gensym "args")]
+          `(let [~arg-sym (first ~args)
+                 ~args-sym (rest ~args)]
+             ~(?branch arg-sym pat (?seq args-sym (rest pats) body else) else)))))
     `(if (seq ~args)
        ~else
        ~body)))
@@ -53,15 +53,15 @@
       body
       `(let [~(symbol (name pat)) ~arg] ~body))
     (if (seqable? pat)
-      (let [a (gensym "arg")
-            as (gensym "args")]
-        `(let [~a ~arg]
+      (let [arg-sym (gensym "arg")
+            args-sym (gensym "args")]
+        `(let [~arg-sym ~arg]
            ~(if (= (type pat) Any)
-              `(let [~as (seq ~a)]
-                 ~(?seq as pat body else))
-              `(if (= (type ~a) ~(type pat))
-                 (let [~as (seq ~a)]
-                   ~(?seq as pat body else))
+              `(let [~args-sym (seq ~arg-sym)]
+                 ~(?seq args-sym pat body else))
+              `(if (= (type ~arg-sym) ~(type pat))
+                 (let [~args-sym (seq ~arg-sym)]
+                   ~(?seq args-sym pat body else))
                  ~else))))
       `(if (= ~arg ~pat)
          ~body
