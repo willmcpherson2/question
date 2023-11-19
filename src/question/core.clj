@@ -24,26 +24,26 @@
 (defn- ?seq
   "Pattern match a sequence. arg-sym is the symbol of the argument and
   args-sym is (seq arg).
-  They are reused via (let [arg (first args) args (rest args)] ...)"
+  They are reused via (let [arg (first args) args (next args)] ...)"
   [arg-sym args-sym pats body else]
   (if (seq pats)
     (let [pat (first pats)]
       (if (= pat '&)
-        (let [pats (rest pats)]
+        (let [pats (next pats)]
           (if (seq pats)
             (let [pat (first pats)]
-              (if (seq (rest pats))
+              (if (seq (next pats))
                 (throw (IllegalArgumentException. "too many arguments after &"))
                 (?branch args-sym pat body else)))
             (throw (IllegalArgumentException. "missing argument after &"))))
         `(if ~args-sym
            (let [~arg-sym (first ~args-sym)
-                 ~args-sym (rest ~args-sym)]
+                 ~args-sym (next ~args-sym)]
              ~(?branch arg-sym
                        pat
                        (?seq arg-sym
                              args-sym
-                             (rest pats)
+                             (next pats)
                              body else)
                        else))
            ~else)))
@@ -97,7 +97,7 @@
       (if (> num-clauses 0)
         (let [arg-sym (gensym "arg")
               names (repeatedly (/ num-clauses 2) (partial gensym "branch"))
-              elses (concat (rest names) [nil])
+              elses (concat (next names) [nil])
               branches (->> clauses
                             (partition 2)
                             (map vector elses)
