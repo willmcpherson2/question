@@ -21,7 +21,7 @@
 
 (declare ?branch)
 
-(defmacro ?seq
+(defn- ?seq
   "Single branch of ?, taking sequences for the argument and
   pattern. Only the elements will be pattern matched, so the sequence
   types don't matter."
@@ -34,18 +34,18 @@
             (let [pat (first pats)]
               (if (seq (rest pats))
                 (throw (IllegalArgumentException. "too many arguments after &"))
-                `(?branch ~args ~pat ~body ~else)))
+                (?branch args pat body else)))
             (throw (IllegalArgumentException. "missing argument after &"))))
         (let [a (gensym "arg")
               as (gensym "args")]
           `(let [~a (first ~args)
                  ~as (rest ~args)]
-             (?branch ~a ~pat (?seq ~as ~(rest pats) ~body ~else) ~else)))))
+             ~(?branch a pat (?seq as (rest pats) body else) else)))))
     `(if (seq ~args)
        ~else
        ~body)))
 
-(defmacro ?branch
+(defn- ?branch
   "Single branch of ?."
   [arg pat body else]
   (if (symbol? pat)
@@ -58,10 +58,10 @@
         `(let [~a ~arg]
            ~(if (= (type pat) Any)
               `(let [~as (seq ~a)]
-                 (?seq ~as ~pat ~body ~else))
+                 ~(?seq as pat body else))
               `(if (= (type ~a) ~(type pat))
                  (let [~as (seq ~a)]
-                   (?seq ~as ~pat ~body ~else))
+                   ~(?seq as pat body else))
                  ~else))))
       `(if (= ~arg ~pat)
          ~body
@@ -100,10 +100,10 @@
                             (map vector elses)
                             (map (fn [[else [name [pat body]]]]
                                    [name `(fn []
-                                            (?branch ~arg-sym
-                                                     ~(eval pat)
-                                                     ~body
-                                                     ~(if else `(~else) nil)))]))
+                                            ~(?branch arg-sym
+                                                      (eval pat)
+                                                      body
+                                                      (if else `(~else) nil)))]))
                             reverse
                             (apply concat)
                             vec)
