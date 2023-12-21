@@ -147,7 +147,7 @@ If no clause matches the argument, `match` will throw an `IllegalArgumentExcepti
        Long :long) ;=> :string
 ```
 
-But here, `String` is resolved to the value `java.lang.String`, so it doesn't match:
+But here, `string` is resolved to the value `java.lang.String`, so it doesn't match:
 
 ```clojure
 (let [string String
@@ -163,8 +163,8 @@ But if the definition is not local, it's still a bind:
 (def string String)
 (def long Long)
 (match (type 1)
-       String :string
-       Long :long) ;=> :string
+       string :string
+       long :long) ;=> :string
 ```
 
 This can be confusing if you intended to bind but accidentally used something in scope.
@@ -299,7 +299,9 @@ Quote syntax is also valid:
 ```
 
 https://github.com/clojure/core.match/wiki/Basic-usage#sequential-types
+
 https://github.com/clojure/core.match/wiki/Basic-usage#guards
+
 https://clojure.atlassian.net/browse/MATCH-103
 
 ### Maps
@@ -332,6 +334,7 @@ https://github.com/clojure/core.match/wiki/Basic-usage#map-patterns
 ```
 
 https://stackoverflow.com/questions/72150186/clojure-core-match-on-nested-map
+
 https://clojure.atlassian.net/browse/MATCH-107
 
 ### Pattern abstraction
@@ -342,8 +345,8 @@ Because patterns are evaluated, `?` lets you abstract over patterns:
 (defn pair [x]
   [x x])
 
-(? (pair 1)
-   (pair 'x) x) ;=> 1
+(? [1 1]
+   (pair 1) :ok) ;=> :ok
 ```
 
 `match` can be extended by other means: [Advanced usage](https://github.com/clojure/core.match/wiki/Advanced-usage)
