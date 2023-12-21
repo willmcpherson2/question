@@ -117,7 +117,7 @@ nil
 :ok
 ```
 
-## Comparison with [`core.match`](https://github.com/clojure/core.match)
+## Comparison with [`core.match`](https://github.com/clojure/core.match) (version 1.0.1)
 
 This section compares `match` from `core.match` with `?` from `question`.
 
