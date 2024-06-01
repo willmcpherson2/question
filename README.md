@@ -37,23 +37,23 @@ Macro
 
 ;; No patterns, so always nil
 (? 1)
-nil
+;=> nil
 
 ;; Argument is ignored, so always :something
 (? 1
    _ :something)
-:something
+;=> :something
 
 ;; (= 1 1), so :one
 (? 1
    1 :one)
-:one
+;=> :one
 
 ;; First branch fails, second succeeds
 (? 2
    1 :one
    2 :two)
-:two
+;=> :two
 
 (? [1 2]
    (list 1 2) :list-1-2 ;; Sequence types must match
@@ -61,60 +61,60 @@ nil
    [1 3] :vec-1-3       ;; Every element must be equal
    [1 2 3] :vec-1-2-3   ;; No excess elements
    [1 2] :vec-1-2)
-:vec-1-2
+;=> :vec-1-2
 
 ;; Use rest syntax if length doesn't matter
 (? [1 2 3]
    [1 & _] :starts-1)
-:starts-1
+;=> :starts-1
 
 ;; The Any type matches any seqable
 (? [1 2 3]
    (any 1 2 3) :seqable)
-:seqable
+;=> :seqable
 
 ;; Symbols are bound in the body
 (? [1 2 3]
    ['x 'y 3] (+ x y))
-3
+;=> 3
 
 ;; Quoting the whole pattern can be easier
 (? [1 2 3]
    '[x y 3] (+ x y))
-3
+;=> 3
 
 ;; Syntax-quote works too
 (? [1 2 3]
    `[x y 3] (+ x y))
-3
+;=> 3
 
 ;; Splitting a sequence
 (? [1 2 3]
    '[x & xs] {:first x, :rest xs})
-{:first 1, :rest '(2 3)}
+;=> {:first 1, :rest '(2 3)}
 
 ;; Patterns are evaluated at compile-time
 (? [1 2 3]
    [1 2 (+ 1 2)] :ok)
-:ok
+;=> :ok
 
 ;; def variables are available at compile-time
 (def three 3)
 (? [1 2 3]
    [1 2 three] :ok)
-:ok
+;=> :ok
 
 ;; You can even apply functions to patterns
 (? '(1 2 3)
    (reverse '(x 2 1)) x)
-3
+;=> 3
 
 ;; If a pattern fails, its body will not be evaluated
 (? 2
    1 (throw (Exception. "evaluated!"))
    2 :ok
    3 (throw (Exception. "evaluated!")))
-:ok
+;=> :ok
 ```
 
 ## Comparison with [`core.match`](https://github.com/clojure/core.match) (version 1.0.1)
@@ -144,7 +144,8 @@ If no clause matches the argument, `match` will throw an `IllegalArgumentExcepti
 ```clojure
 (match (type 1)
        String :string
-       Long :long) ;=> :string
+       Long :long)
+;=> :string
 ```
 
 But here, `string` is resolved to the value `java.lang.String`, so it doesn't match:
@@ -154,7 +155,8 @@ But here, `string` is resolved to the value `java.lang.String`, so it doesn't ma
       long Long]
   (match (type 1)
          string :string
-         long :long)) ;=> :long
+         long :long))
+;=> :long
 ```
 
 But if the definition is not local, it's still a bind:
@@ -164,7 +166,8 @@ But if the definition is not local, it's still a bind:
 (def long Long)
 (match (type 1)
        string :string
-       long :long) ;=> :string
+       long :long)
+;=> :string
 ```
 
 This can be confusing if you intended to bind but accidentally used something in scope.
@@ -174,7 +177,8 @@ This can be confusing if you intended to bind but accidentally used something in
 ```clojure
 (? (type 1)
    String :string
-   Long :long) ;=> :long
+   Long :long)
+;=> :long
 ```
 
 Which will result in an `UnsupportedOperationException` if you try to use a local variable:
@@ -212,7 +216,8 @@ Variable shadowing works as expected with `?`:
 (let [x 1]
   (? 3
      0 "zero"
-     'x (str x))) ;=> "3"
+     'x (str x)))
+;=> "3"
 ```
 
 https://clojure.atlassian.net/browse/MATCH-126
@@ -224,11 +229,13 @@ https://clojure.atlassian.net/browse/MATCH-126
 ```clojure
 (? (type 1)
    java.lang.Short :short
-   java.lang.Long :long) ;=> :long
+   java.lang.Long :long)
+;=> :long
 
 (? 2147483647
    Short/MAX_VALUE :short
-   Integer/MAX_VALUE :long) ;=> :long
+   Integer/MAX_VALUE :long)
+;=> :long
 ```
 
 https://clojure.atlassian.net/browse/MATCH-130
@@ -239,10 +246,12 @@ https://clojure.atlassian.net/browse/MATCH-130
 
 ```clojure
 (match [1]
-       [1] :vector) ;=> :vector
+       [1] :vector)
+;=> :vector
 
 (match {:a 1}
-       {:a 1} :map) ;=> :map
+       {:a 1} :map)
+;=> :map
 ```
 
 But this is a syntax error:
@@ -261,7 +270,8 @@ But if the vector is in a variable, it's valid:
 (let [x [1]]
   (match x
        [1] :vector
-       {:a 1} :map)) ;=> vector
+       {:a 1} :map))
+;=> vector
 ```
 
 `?` has no special case for vectors:
@@ -269,7 +279,8 @@ But if the vector is in a variable, it's valid:
 ```clojure
 (? [1]
    [1] :vector
-   {:a 1} :map) ;=> vector
+   {:a 1} :map)
+;=> vector
 ```
 
 ### Lists
@@ -279,7 +290,8 @@ To match a list using `match`, you need `:seq` combined with `:guard`:
 ```clojure
 (match (list 1 2 3)
   [1 2 3] :vector
-  (([1 2 3] :seq) :guard #(list? %)) :list) ;=> :list
+  (([1 2 3] :seq) :guard #(list? %)) :list)
+;=> :list
 ```
 
 With `?`, a list is a valid pattern:
@@ -287,7 +299,8 @@ With `?`, a list is a valid pattern:
 ```clojure
 (? (list 1 2 3)
    [1 2 3] :vector
-   (list 1 2 3) :list) ;=> :list
+   (list 1 2 3) :list)
+;=> :list
 ```
 
 Quote syntax is also valid:
@@ -295,7 +308,8 @@ Quote syntax is also valid:
 ```clojure
 (? (list 1 2 3)
    [1 2 3] :vector
-   '(1 2 3) :list) ;=> :list
+   '(1 2 3) :list)
+;=> :list
 ```
 
 https://github.com/clojure/core.match/wiki/Basic-usage#sequential-types
@@ -310,14 +324,16 @@ https://clojure.atlassian.net/browse/MATCH-103
 
 ```clojure
 (match {:a 1, :b 2}
-       {:a 1} :ok) ;=> :ok
+       {:a 1} :ok)
+;=> :ok
 ```
 
 `?` doesn't give maps special treatment:
 
 ```clojure
 (? {:a 1, :b 2}
-   {:a 1} :ok) ;=> nil
+   {:a 1} :ok)
+;=> nil
 ```
 
 https://github.com/clojure/core.match/wiki/Basic-usage#map-patterns
@@ -346,7 +362,8 @@ Because patterns are evaluated, `?` lets you abstract over patterns:
   [x x])
 
 (? [1 1]
-   (pair 1) :ok) ;=> :ok
+   (pair 1) :ok)
+;=> :ok
 ```
 
 `match` can be extended by other means: [Advanced usage](https://github.com/clojure/core.match/wiki/Advanced-usage)
