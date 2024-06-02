@@ -107,4 +107,13 @@
   (is (= (? [1]
             [1 'x] [:one x]
             _ :ok)
-         :ok)))
+         :ok))
+
+  (is (= (? (lazy-seq (cons :a (lazy-seq (cons :b (lazy-seq (cons (throw (Exception. "evaluated!")) nil))))))
+            (lazy-seq (cons :x (lazy-seq (cons :y (lazy-seq (cons :z nil)))))) :ok)
+         nil))
+
+  ;; Throws an exception. Can we be more lazy?
+  #_(is (= (? (lazy-seq (cons :a (lazy-seq (cons (throw (Exception. "evaluated!")) nil))))
+              (lazy-seq (cons :x (lazy-seq (cons :y nil)))) :ok)
+           nil)))
